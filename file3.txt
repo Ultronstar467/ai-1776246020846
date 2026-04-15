@@ -1,0 +1,78 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+app = FastAPI(
+    title="Simple Calculator API",
+    description="A basic calculator API with add, subtract, multiply, and divide operations.",
+    version="1.0.0"
+)
+
+# Configure CORS to allow communication from your frontend
+# For development, you can allow all origins. In production, specify your frontend's domain.
+origins = [
+    "http://localhost",
+    "http://localhost:8000", # FastAPI's default host
+    "http://127.0.0.1:8000", # FastAPI's default host
+    "http://127.0.0.1:5500", # VS Code Live Server default host
+    # Add other frontend origins if necessary, e.g., your deployed frontend URL
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allows all origins for simplicity in this example.
+                         # In a real application, replace with `origins` variable.
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"], # Allows all headers
+)
+
+@app.get("/", tags=["Root"])
+async def read_root():
+    return {"message": "Welcome to the Calculator API! Use /docs for API documentation."}
+
+@app.get("/add", tags=["Operations"])
+async def add(num1: float, num2: float):
+    """
+    Adds two numbers.
+    - **num1**: The first number.
+    - **num2**: The second number.
+    """
+    result = num1 + num2
+    return {"operation": "add", "num1": num1, "num2": num2, "result": result}
+
+@app.get("/subtract", tags=["Operations"])
+async def subtract(num1: float, num2: float):
+    """
+    Subtracts the second number from the first.
+    - **num1**: The first number.
+    - **num2**: The second number.
+    """
+    result = num1 - num2
+    return {"operation": "subtract", "num1": num1, "num2": num2, "result": result}
+
+@app.get("/multiply", tags=["Operations"])
+async def multiply(num1: float, num2: float):
+    """
+    Multiplies two numbers.
+    - **num1**: The first number.
+    - **num2**: The second number.
+    """
+    result = num1 * num2
+    return {"operation": "multiply", "num1": num1, "num2": num2, "result": result}
+
+@app.get("/divide", tags=["Operations"])
+async def divide(num1: float, num2: float):
+    """
+    Divides the first number by the second.
+    - **num1**: The dividend.
+    - **num2**: The divisor.
+    Raises an HTTPException if division by zero is attempted.
+    """
+    if num2 == 0:
+        raise HTTPException(status_code=400, detail="Cannot divide by zero")
+    result = num1 / num2
+    return {"operation": "divide", "num1": num1, "num2": num2, "result": result}
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
