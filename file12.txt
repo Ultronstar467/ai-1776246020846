@@ -1,0 +1,2 @@
+cd calculator_app/frontend
+            python -m http.server 5500
