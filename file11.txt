@@ -1,0 +1,46 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const num1Input = document.getElementById('num1');
+    const num2Input = document.getElementById('num2');
+    const resultDisplay = document.getElementById('result');
+    const buttons = document.querySelectorAll('.button-grid button');
+
+    // Replace with your FastAPI backend URL
+    const API_BASE_URL = 'http://127.0.0.1:8000'; 
+
+    buttons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const num1 = parseFloat(num1Input.value);
+            const num2 = parseFloat(num2Input.value);
+            const operation = button.dataset.operation; // 'add', 'subtract', etc.
+
+            // Clear previous error state
+            resultDisplay.classList.remove('error');
+
+            if (isNaN(num1) || isNaN(num2)) {
+                resultDisplay.textContent = 'Please enter valid numbers.';
+                resultDisplay.classList.add('error');
+                return;
+            }
+
+            try {
+                const url = `${API_BASE_URL}/${operation}?num1=${num1}&num2=${num2}`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'An unknown error occurred.');
+                }
+
+                const data = await response.json();
+                resultDisplay.textContent = `Result: ${data.result}`;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                resultDisplay.textContent = `Error: ${error.message}`;
+                resultDisplay.classList.add('error');
+            }
+        });
+    });
+
+    // Optional: Add a small initial message or calculation
+    resultDisplay.textContent = 'Enter numbers and choose an operation.';
+});
